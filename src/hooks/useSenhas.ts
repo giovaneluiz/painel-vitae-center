@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Senha } from '../types';
 import { API_CONFIG, USE_MOCK_DATA } from '../constants/api';
 
@@ -23,12 +23,26 @@ export const useSenhas = () => {
   const [historico, setHistorico] = useState<Senha[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [novaSenhaChamada, setNovaSenhaChamada] = useState(false);
 
   // Função para buscar senhas da API
-  const fetchSenhas = async () => {
+  const fetchSenhas = useCallback(async () => {
     if (USE_MOCK_DATA) {
-      // Usar dados mockados
-      setSenhaAtual(MOCK_SENHA_ATUAL);
+      // Simular chamada de nova senha aleatoriamente (para teste)
+      // 30% de chance de nova senha a cada 7 segundos
+      const temNovaSenha = Math.random() > 0.7;
+      
+      if (temNovaSenha) {
+        const novoNumero = `V-${String(Math.floor(Math.random() * 100)).padStart(3, '0')}`;
+        const novaSenha = {
+          ...MOCK_SENHA_ATUAL,
+          numero: novoNumero,
+          timestamp: Date.now(),
+        };
+        setSenhaAtual(novaSenha);
+        setNovaSenhaChamada(true);
+      }
+      
       setHistorico(MOCK_HISTORICO);
       setLoading(false);
       return;
@@ -43,7 +57,13 @@ export const useSenhas = () => {
       }
 
       const data = await response.json();
-      setSenhaAtual(data.atual);
+      
+      // Detectar se há uma nova senha (comparar timestamp ou ID)
+      if (data.atual && data.atual.timestamp !== senhaAtual?.timestamp) {
+        setSenhaAtual(data.atual);
+        setNovaSenhaChamada(true);
+      }
+      
       setHistorico(data.anteriores || []);
       setError(null);
     } catch (err) {
@@ -52,17 +72,29 @@ export const useSenhas = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [senhaAtual?.timestamp]);
+
+  const resetNovaSenha = useCallback(() => {
+    setNovaSenhaChamada(false);
+  }, []);
 
   useEffect(() => {
     // Buscar senhas inicialmente
     fetchSenhas();
 
-    // Atualizar a cada 3 segundos
-    const interval = setInterval(fetchSenhas, 3000);
+    // Atualizar a cada 7 segundos
+    const interval = setInterval(fetchSenhas, 7000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchSenhas]);
 
-  return { senhaAtual, historico, loading, error, refetch: fetchSenhas };
+  return { 
+    senhaAtual, 
+    historico, 
+    loading, 
+    error, 
+    novaSenhaChamada,
+    resetNovaSenha,
+    refetch: fetchSenhas 
+  };
 };

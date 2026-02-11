@@ -43,8 +43,7 @@ export const SenhaAtual: React.FC<SenhaAtualProps> = ({ senha }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.7,
-    paddingRight: 10,
+    flex: 1,
   },
   card: {
     flex: 1,

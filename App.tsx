@@ -1,35 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, StatusBar, SafeAreaView } from 'react-native';
-import { Header } from './src/components/Header';
-import { SenhaAtual } from './src/components/SenhaAtual';
-import { Historico } from './src/components/Historico';
-import { Footer } from './src/components/Footer';
-import { useSenhas } from './src/hooks/useSenhas';
-import { formatarHora } from './src/utils/formatters';
-import { COLORS } from './src/constants/colors';
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, StatusBar, Animated } from "react-native";
+import { Header } from "./src/components/Header";
+import { SenhaAtual } from "./src/components/SenhaAtual";
+import { Historico } from "./src/components/Historico";
+
+import { YouTubePlayer } from "./src/components/YouTubePlayer";
+import { useSenhas } from "./src/hooks/useSenhas";
+import { formatarHora } from "./src/utils/formatters";
+import { COLORS } from "./src/constants/colors";
+
+const YOUTUBE_VIDEO_ID = "ORPyOp_WFpU";
+const TEMPO_EXIBICAO_SENHA = 14000; // 14 segundos (2 ciclos de 7s)
+const TEMPO_EXTRA_ESPERA = 3000; // 3 segundos extras antes de voltar ao vídeo
 
 export default function App() {
-  const { senhaAtual, historico, loading, error } = useSenhas();
+  const { senhaAtual, historico, novaSenhaChamada, resetNovaSenha } =
+    useSenhas();
   const [relogio, setRelogio] = useState(new Date());
+  const [mostrarPainel, setMostrarPainel] = useState(false);
+  const [fadeAnim] = useState(new Animated.Value(0));
 
+  // Atualizar relógio a cada segundo
   useEffect(() => {
     const timer = setInterval(() => setRelogio(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Detectar nova senha e alternar para o painel
+  useEffect(() => {
+    if (novaSenhaChamada) {
+      // Mostrar painel com fade in
+      setMostrarPainel(true);
+
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: false,
+      }).start();
+
+      // Após 14 segundos (2 chamadas de 7s), esperar mais 3s e voltar para o vídeo
+      const timeout = setTimeout(() => {
+        // Espera extra de 3 segundos
+        setTimeout(() => {
+          // Fade out do painel
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: false,
+          }).start(() => {
+            setMostrarPainel(false);
+            resetNovaSenha();
+          });
+        }, TEMPO_EXTRA_ESPERA);
+      }, TEMPO_EXIBICAO_SENHA);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [novaSenhaChamada, fadeAnim, resetNovaSenha]);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar hidden />
-      
+
+      {/* Header fixo no topo */}
       <Header relogio={formatarHora(relogio)} />
-      
+
+      {/* Conteúdo principal */}
       <View style={styles.content}>
-        <SenhaAtual senha={senhaAtual} />
+        {/* CAIXA DA SENHA + VÍDEO (mesma área) */}
+        <View style={styles.senhaBox}>
+          {/* Vídeo do YouTube (sempre rodando no fundo) */}
+          <YouTubePlayer
+            videoId={YOUTUBE_VIDEO_ID}
+            isVisible={!mostrarPainel}
+          />
+
+          {/* Painel de senha (aparece por cima do vídeo) */}
+          {mostrarPainel && (
+            <Animated.View
+              style={[styles.painelInterno, { opacity: fadeAnim }]}
+            >
+              <SenhaAtual senha={senhaAtual} />
+            </Animated.View>
+          )}
+        </View>
+
+        {/* Histórico de senhas (lateral direita) */}
         <Historico senhas={historico} />
       </View>
-      
-      <Footer />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -40,7 +99,21 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 20,
+  },
+  senhaBox: {
+    flex: 0.7,
+    backgroundColor: "transparent",
+    borderRadius: 25,
+    overflow: "hidden",
+    position: "relative",
+  },
+  painelInterno: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
