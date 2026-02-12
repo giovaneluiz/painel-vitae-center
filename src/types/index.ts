@@ -3,6 +3,7 @@ export interface Senha {
   Tipo_Senha: string
   Num_Sequencial: number
   Dsc_Localizacao: string
+  nom_paciente: string
   timestamp?: number
 }
 

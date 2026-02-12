@@ -48,11 +48,15 @@ export default function App() {
     if (novaSenhaChamada) {
       // Mostrar painel com fade in
       setMostrarPainel(true)
-      senhaAtual
-        ? speak(
-            `Senha ${senhaAtual.Num_Sequencial})}, favor comparecer ao ${senhaAtual.Dsc_Localizacao}`,
-          )
-        : null
+      if (senhaAtual) {
+        senhaAtual.nom_paciente
+          ? speak(
+              `${senhaAtual.nom_paciente})}, ${senhaAtual.Dsc_Localizacao}`,
+            )
+          : speak(
+              `Senha ${senhaAtual.Num_Sequencial})}, favor comparecer ao ${senhaAtual.Dsc_Localizacao}`,
+            )
+      } else return
 
       Animated.timing(fadeAnim, {
         toValue: 1,

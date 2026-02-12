@@ -20,7 +20,7 @@ export const useSenhas = () => {
         const data: Senha = await response.json()
 
         // Detectar se há uma nova senha (comparar timestamp ou ID)
-        if (data.Num_Sequencial && data.timestamp) {
+        if (data.Cod_Senha_Atendimento && data.timestamp) {
           setSenhaAtual(data)
           setNovaSenhaChamada(true)
         }

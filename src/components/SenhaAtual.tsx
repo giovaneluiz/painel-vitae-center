@@ -1,44 +1,54 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Senha } from '../types';
-import { COLORS } from '../constants/colors';
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Senha } from '../types'
+import { COLORS } from '../constants/colors'
 
 interface SenhaAtualProps {
-  senha: Senha | null;
+  senha: Senha | null
 }
 
 export const SenhaAtual: React.FC<SenhaAtualProps> = ({ senha }) => {
   if (!senha) {
     return (
       <View style={styles.container}>
-        <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.card}>
+        <LinearGradient
+          colors={[COLORS.primary, COLORS.primaryDark]}
+          style={styles.card}
+        >
           <Text style={styles.aguardando}>Aguardando próxima senha...</Text>
         </LinearGradient>
       </View>
-    );
+    )
   }
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.card}>
-        
-        <Text style={styles.numero}>{senha.Tipo_Senha}{senha.Num_Sequencial.toString().padStart(4, '0')}</Text>
-        
+      <LinearGradient
+        colors={[COLORS.primary, COLORS.primaryDark]}
+        style={styles.card}
+      >
+        {senha.nom_paciente ? (
+          <Text style={styles.paciente}>{senha.nom_paciente}</Text>
+        ) : (
+          <Text style={styles.numero}>
+            {senha.Tipo_Senha}
+            {senha.Num_Sequencial.toString().padStart(4, '0')}
+          </Text>
+        )}
+
         <View style={styles.infoContainer}>
           <View style={styles.infoBox}>
             <Text style={styles.infoLabel}>LOCAL</Text>
             <Text style={styles.infoValue}>{senha.Dsc_Localizacao}</Text>
           </View>
-          
-          <View style={styles.infoBox}>
-          
-          </View>
+
+          <View style={styles.infoBox}></View>
         </View>
       </LinearGradient>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -66,25 +76,27 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: COLORS.white,
     marginVertical: -10,
-    
+  },
+  paciente: {
+    fontSize: 120,
+    textAlign: 'center',
+    fontWeight: '900',
+    color: COLORS.white,
+    marginVertical: -10,
   },
   infoContainer: {
-    
     backgroundColor: 'rgba(0,0,0,0.15)',
     borderRadius: 20,
     padding: 25,
     marginTop: 100,
     width: '100%',
-    fontSize: 450
-
-    
-    
+    fontSize: 450,
   },
   infoBox: {
     alignItems: 'center',
   },
   infoLabel: {
-    fontSize: 18,
+    fontSize: 58,
     color: 'rgba(255,255,255,0.7)',
     marginBottom: 5,
   },
@@ -102,4 +114,4 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.7)',
     fontStyle: 'italic',
   },
-});
+})
