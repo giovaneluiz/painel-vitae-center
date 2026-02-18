@@ -49,13 +49,10 @@ export default function App() {
       })
     }
   }, [senhaAtual])
-  
-  const playSound = () => {    
-    sound.play()
-  }
 
   const speak = (frase: string) => {
-    playSound()
+    sound.seekTo(0)
+    sound.play()
     Speech.speak(frase, { language: 'pt-BR', voice: 'pt-br-x-afs-local' })
   }
 

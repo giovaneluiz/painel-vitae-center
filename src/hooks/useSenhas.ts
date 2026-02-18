@@ -7,7 +7,6 @@ export const useSenhas = (andar: string | null) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [novaSenhaChamada, setNovaSenhaChamada] = useState(false)
-  const lastTimestampRef = useRef<string | null>(null)
 
   const fetchSenhas = useCallback(async () => {
     if (!andar) {
@@ -44,7 +43,7 @@ export const useSenhas = (andar: string | null) => {
     if (!andar) return
 
     fetchSenhas()
-    const interval = setInterval(fetchSenhas, 3000)
+    const interval = setInterval(fetchSenhas, 7000)
     return () => clearInterval(interval)
   }, [fetchSenhas, andar])
 
